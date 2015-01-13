@@ -85,18 +85,30 @@ function(req, res) {
 app.post('/signup', function(req, res) {
   // collect username and password
   var username = req.body.username;
-  var password = req.body.password;
-  var newUserInfo = new User({
-    username: username,
-    password: password
+  //var password =
+  bcrypt.hash(req.body.password, null, null, function(err, hash) {
+    if (err) throw err;
+    //return hash;
+    var newUserInfo = new User({
+      username: username,
+      password: hash
+    });
+    Users.add(newUserInfo);
+    //console.log(Users.models);
+    res.render('index');
   });
-
-
-  Users.add(newUserInfo);
-  res.render('index');
 
 });
 
+app.get('/login', function(req, res) {
+  res.render('login');
+});
+
+app.post('/login', function(req, res) {
+  console.log(req.body.username);
+  util.checkUser(req.body.username, req.body.password);
+  res.render('index');
+});
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail

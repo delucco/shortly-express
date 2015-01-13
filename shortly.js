@@ -11,6 +11,9 @@ var Links = require('./app/collections/links');
 var Link = require('./app/models/link');
 var Click = require('./app/models/click');
 
+var bcrypt = require('bcrypt-nodejs');
+var knex = require('knex');
+
 var app = express();
 
 app.set('views', __dirname + '/views');
@@ -23,24 +26,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
 
-app.get('/', 
+app.get('/',
+function(req, res) {
+  res.render('signup');
+});
+
+//change?
+app.get('/create',
 function(req, res) {
   res.render('index');
 });
 
-app.get('/create', 
-function(req, res) {
-  res.render('index');
-});
-
-app.get('/links', 
+app.get('/links',
 function(req, res) {
   Links.reset().fetch().then(function(links) {
     res.send(200, links.models);
   });
 });
 
-app.post('/links', 
+app.post('/links',
 function(req, res) {
   var uri = req.body.url;
 
@@ -78,6 +82,20 @@ function(req, res) {
 // Write your authentication routes here
 /************************************************************/
 
+app.post('/signup', function(req, res) {
+  // collect username and password
+  var username = req.body.username;
+  var password = req.body.password;
+  var newUserInfo = new User({
+    username: username,
+    password: password
+  });
+
+
+  Users.add(newUserInfo);
+  res.render('index');
+
+});
 
 
 /************************************************************/

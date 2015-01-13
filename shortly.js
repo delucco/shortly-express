@@ -110,9 +110,13 @@ app.get('/login', function(req, res) {
 });
 
 app.post('/login', function(req, res) {
-  console.log(req.body.username);
-  util.checkUser(req.body.username, req.body.password);
-  res.render('index');
+  util.checkUser(req.body.username, req.body.password, function(yes){
+      if (yes) {
+        res.render('index');
+      } else {
+        res.render('signup');
+      }
+  });
 });
 
 /************************************************************/

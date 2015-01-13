@@ -93,9 +93,14 @@ app.post('/signup', function(req, res) {
       username: username,
       password: hash
     });
-    Users.add(newUserInfo);
-    //console.log(Users.models);
-    res.render('index');
+
+    newUserInfo.save().then(function(user) {
+      Users.add(user);
+      res.send(200, user);
+    });
+    // Users.add(newUserInfo);
+    // console.log(Users.models);
+    // res.render('index');
   });
 
 });

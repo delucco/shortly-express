@@ -3,6 +3,7 @@ var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
 
+var session = require('express-session');
 
 var db = require('./app/config');
 var Users = require('./app/collections/users');
@@ -25,16 +26,26 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 
+app.use(session({
+  secret: 'shhh, it\'s a secret',
+  resave: false,
+  saveUninitialized: true
+}));
 
-app.get('/',
-function(req, res) {
-  res.render('signup');
+app.get('/', function(req, res) {
+  if (util.isLoggedIn(req)) {
+    res.render('index');
+  } else {
+    res.render('signup');
+  }
 });
 
-//change?
-app.get('/create',
-function(req, res) {
-  res.render('index');
+app.get('/create', function(req, res) {
+  if (util.isLoggedIn(req)) {
+    res.render('index');
+  } else {
+    res.render('signup');
+  }
 });
 
 app.get('/links',
@@ -83,12 +94,9 @@ function(req, res) {
 /************************************************************/
 
 app.post('/signup', function(req, res) {
-  // collect username and password
   var username = req.body.username;
-  //var password =
   bcrypt.hash(req.body.password, null, null, function(err, hash) {
     if (err) throw err;
-    //return hash;
     var newUserInfo = new User({
       username: username,
       password: hash
@@ -96,7 +104,7 @@ app.post('/signup', function(req, res) {
 
     newUserInfo.save().then(function(user) {
       Users.add(user);
-      res.send(200, user);
+      res.render('index');
     });
     // Users.add(newUserInfo);
     // console.log(Users.models);
@@ -109,15 +117,25 @@ app.get('/login', function(req, res) {
   res.render('login');
 });
 
+app.get('/logout', function(req, res) {
+  req.session.user = null;
+  res.render('signup');
+});
+
+
 app.post('/login', function(req, res) {
   util.checkUser(req.body.username, req.body.password, function(yes){
       if (yes) {
-        res.render('index');
+        util.createSession(req, res, req.body.username);
+        console.log('createSession ran');
+        //res.render('index');
       } else {
-        res.render('signup');
+        console.log('user was rejected');
+        res.redirect('/');
       }
   });
 });
+
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail

@@ -104,11 +104,8 @@ app.post('/signup', function(req, res) {
 
     newUserInfo.save().then(function(user) {
       Users.add(user);
-      res.render('index');
+      util.createSession(req, res, username);
     });
-    // Users.add(newUserInfo);
-    // console.log(Users.models);
-    // res.render('index');
   });
 
 });
@@ -127,10 +124,7 @@ app.post('/login', function(req, res) {
   util.checkUser(req.body.username, req.body.password, function(yes){
       if (yes) {
         util.createSession(req, res, req.body.username);
-        console.log('createSession ran');
-        //res.render('index');
       } else {
-        console.log('user was rejected');
         res.redirect('/');
       }
   });
